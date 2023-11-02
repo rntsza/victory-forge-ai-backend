@@ -323,6 +323,82 @@ app.get('/getAllChampionsWinRate/:puuid', async (req, res) => {
   }
 });
 
+// Rota para o endpoint /saveMatchTimeline/:matchid que recebe o id da partida e salva os dados da partida no banco de dados
+app.get('/saveMatchTimeline/:matchId', async (req, res) => {
+  const { matchId } = req.params;
+  try {
+    // Requisição para a API da Riot para pegar a timeline da partida
+    const timelineResponse = await axios.get(`https://americas.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline`, {
+      headers: {
+        'X-Riot-Token': RIOT_API_KEY
+      }
+    });
+
+    // Aqui você deve adaptar a estrutura abaixo para o seu banco de dados
+    // e para o formato que a timeline é retornada pela API da Riot.
+    // Isso é apenas um exemplo e deve ser modificado conforme sua necessidade.
+    const timelineData = timelineResponse.data;
+
+
+    // Os eventos estão dentro dos frames na timeline
+    const frames = timelineResponse.data.info.frames;
+
+    // Mapeando os eventos
+    const events = frames.map(frame => frame.events).flat();
+
+    // Exibindo todos os eventos no console
+    console.log(events);
+
+    // Aqui você pode continuar e salvar os eventos no banco de dados, se necessário.
+    // ...
+
+    res.status(200).json({ message: 'Eventos da timeline obtidos com sucesso.' });
+    
+    // Inserir os dados no banco
+    // const insertResult = await sql`
+    //   INSERT INTO match_timelines (match_id, timeline_data)
+    //   VALUES (${matchId}, ${JSON.stringify(timelineData)})
+    //   RETURNING *
+    // `;
+
+    // if (insertResult) {
+    //   res.status(201).json({ message: 'Timeline salva com sucesso.', data: insertResult[0] });
+    // } else {
+    //   res.status(400).json({ message: 'Falha ao salvar timeline.' });
+    // }
+  } catch (error) {
+    console.error('Erro ao salvar timeline:', error);
+    res.status(500).json({ message: 'Erro interno do servidor.' });
+  }
+});
+
+// Rota para o endpoint /getDeathPositions/:puuid/:matchIds que recebe o puuid do invocador e os ids das partidas e retorna as posições de morte dele
+app.get('/getDeathPositions/:puuid/:matchIds', async (req, res) => {
+  const { puuid, matchIds } = req.params;
+  try {
+    let deathPositions = [];
+    const timelineResponse = await axios.get(`https://americas.api.riotgames.com/lol/match/v5/matches/${matchIds}/timeline`, {
+        headers: {
+          'X-Riot-Token': RIOT_API_KEY
+        }
+      });
+    const frames = timelineResponse.data.info.frames;
+      frames.forEach(frame => {
+        frame.events.forEach(event => {
+          console.log(event.type, event.victimId > 0)
+          if(event.type === 'CHAMPION_KILL' && timelineResponse.data.info.participants[event.victimId - 1].puuid === puuid) {
+            deathPositions.push({ x: event.position.x, y: event.position.y });
+          }
+        });
+      });
+    res.status(200).json(deathPositions);
+  } catch (error) {
+    console.error('Erro ao obter posições de morte:', error);
+    res.status(500).json({ message: 'Erro interno do servidor.' });
+  }
+});
+
+
 
 // Configuração do Postgres 
 const sql = postgres({
