@@ -200,7 +200,6 @@ app.get('/getSummonerByPuuid/:puuid', async (req, res) => {
 app.get('/getWinRate/:puuid', async (req, res) => {
   const summonerPuuid = req.params.puuid;
   try {
-    // Query para buscar vitórias e derrotas
     const winLossResult = await sql`
       SELECT
         SUM(CASE WHEN win THEN 1 ELSE 0 END) as wins,
@@ -209,7 +208,6 @@ app.get('/getWinRate/:puuid', async (req, res) => {
       WHERE puuid = ${summonerPuuid}
     `;
 
-    // Calcula a taxa de vitória
     if (winLossResult && winLossResult.count > 0) {
       const { wins, losses } = winLossResult[0];
       const totalGames = parseInt(wins) + parseInt(losses);
@@ -229,7 +227,6 @@ app.get('/getWinRateWithChampion/:puuid/:champion', async (req, res) => {
   const summonerPuuid = req.params.puuid;
   const championName = req.params.champion;
   try {
-    // Consulta para contar vitórias e derrotas com o campeão especificado
     const winLossResult = await sql`
       SELECT 
         SUM(case when win then 1 else 0 end) as wins,
@@ -257,7 +254,6 @@ app.get('/getWinRateWithChampion/:puuid/:champion', async (req, res) => {
 app.get('/getTopWinningTeammates/:puuid', async (req, res) => {
   const summonerPuuid = req.params.puuid;
   try {
-    // Consulta para encontrar os companheiros de equipe com mais vitórias
     const teammatesResult = await sql`
       WITH teammate_wins AS (
         SELECT d.summonerName, COUNT(*) as wins
@@ -291,7 +287,6 @@ app.get('/getTopWinningTeammates/:puuid', async (req, res) => {
 app.get('/getAllChampionsWinRate/:puuid', async (req, res) => {
   const summonerPuuid = req.params.puuid;
   try {
-    // Consulta para contar vitórias e derrotas por campeão
     const championsStats = await sql`
         SELECT 
         championName,
@@ -323,55 +318,6 @@ app.get('/getAllChampionsWinRate/:puuid', async (req, res) => {
   }
 });
 
-// Rota para o endpoint /saveMatchTimeline/:matchid que recebe o id da partida e salva os dados da partida no banco de dados
-app.get('/saveMatchTimeline/:matchId', async (req, res) => {
-  const { matchId } = req.params;
-  try {
-    // Requisição para a API da Riot para pegar a timeline da partida
-    const timelineResponse = await axios.get(`https://americas.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline`, {
-      headers: {
-        'X-Riot-Token': RIOT_API_KEY
-      }
-    });
-
-    // Aqui você deve adaptar a estrutura abaixo para o seu banco de dados
-    // e para o formato que a timeline é retornada pela API da Riot.
-    // Isso é apenas um exemplo e deve ser modificado conforme sua necessidade.
-    const timelineData = timelineResponse.data;
-
-
-    // Os eventos estão dentro dos frames na timeline
-    const frames = timelineResponse.data.info.frames;
-
-    // Mapeando os eventos
-    const events = frames.map(frame => frame.events).flat();
-
-    // Exibindo todos os eventos no console
-    console.log(events);
-
-    // Aqui você pode continuar e salvar os eventos no banco de dados, se necessário.
-    // ...
-
-    res.status(200).json({ message: 'Eventos da timeline obtidos com sucesso.' });
-    
-    // Inserir os dados no banco
-    // const insertResult = await sql`
-    //   INSERT INTO match_timelines (match_id, timeline_data)
-    //   VALUES (${matchId}, ${JSON.stringify(timelineData)})
-    //   RETURNING *
-    // `;
-
-    // if (insertResult) {
-    //   res.status(201).json({ message: 'Timeline salva com sucesso.', data: insertResult[0] });
-    // } else {
-    //   res.status(400).json({ message: 'Falha ao salvar timeline.' });
-    // }
-  } catch (error) {
-    console.error('Erro ao salvar timeline:', error);
-    res.status(500).json({ message: 'Erro interno do servidor.' });
-  }
-});
-
 // Rota para o endpoint /getDeathPositions/:puuid/:matchIds que recebe o puuid do invocador e os ids das partidas e retorna as posições de morte dele
 app.get('/getDeathPositions/:puuid/:matchIds', async (req, res) => {
   const { puuid, matchIds } = req.params;
@@ -397,8 +343,6 @@ app.get('/getDeathPositions/:puuid/:matchIds', async (req, res) => {
     res.status(500).json({ message: 'Erro interno do servidor.' });
   }
 });
-
-
 
 // Configuração do Postgres 
 const sql = postgres({
