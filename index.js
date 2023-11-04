@@ -8,7 +8,7 @@ require('dotenv').config();
 let { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, ENDPOINT_ID, RIOT_API } = process.env;
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const RIOT_API_KEY = RIOT_API;
 
 app.use(cors());
@@ -255,26 +255,28 @@ app.get('/getTopWinningTeammates/:puuid', async (req, res) => {
   const summonerPuuid = req.params.puuid;
   try {
     const teammatesResult = await sql`
-      WITH teammate_wins AS (
-        SELECT d.summonerName, COUNT(*) as wins
-        FROM players AS p
-        INNER JOIN players AS d ON p.matchId = d.matchId AND p.teamId = d.teamId
-        WHERE p.puuid = ${summonerPuuid} AND d.puuid != ${summonerPuuid} AND p.win = true
-        GROUP BY d.summonerName
-      ),
-      teammate_games AS (
-        SELECT d.summonerName, COUNT(*) as total_games
-        FROM players AS p
-        INNER JOIN players AS d ON p.matchId = d.matchId AND p.teamId = d.teamId
-        WHERE p.puuid = ${summonerPuuid} AND d.puuid != ${summonerPuuid}
-        GROUP BY d.summonerName
-      )
-      SELECT w.summonerName, w.wins, g.total_games, ROUND((w.wins::numeric / g.total_games::numeric) * 100, 2) as winrate
-      FROM teammate_wins w
-      INNER JOIN teammate_games g ON w.summonerName = g.summonerName
-      ORDER BY w.wins DESC, winrate DESC
-      LIMIT 10;
-    `;
+    WITH teammate_wins AS (
+      SELECT d.summonerName, COUNT(*) as wins
+      FROM players AS p
+      INNER JOIN players AS d ON p.matchId = d.matchId AND p.teamId = d.teamId
+      WHERE p.puuid = ${summonerPuuid} AND d.puuid != ${summonerPuuid} AND p.win = true
+      GROUP BY d.summonerName
+    ),
+    teammate_games AS (
+      SELECT d.summonerName, COUNT(*) as total_games
+      FROM players AS p
+      INNER JOIN players AS d ON p.matchId = d.matchId AND p.teamId = d.teamId
+      WHERE p.puuid = ${summonerPuuid} AND d.puuid != ${summonerPuuid}
+      GROUP BY d.summonerName
+      HAVING COUNT(*) > 3
+    )
+    SELECT w.summonerName, w.wins, g.total_games, ROUND((w.wins::numeric / g.total_games::numeric) * 100, 2) as winrate
+    FROM teammate_wins w
+    INNER JOIN teammate_games g ON w.summonerName = g.summonerName
+    WHERE g.total_games > 3
+    ORDER BY w.wins DESC, winrate DESC
+    LIMIT 100;
+  `;
 
     res.json(teammatesResult);
   } catch (error) {
@@ -331,9 +333,9 @@ app.get('/getDeathPositions/:puuid/:matchIds', async (req, res) => {
     const frames = timelineResponse.data.info.frames;
       frames.forEach(frame => {
         frame.events.forEach(event => {
-          console.log(event.type, event.victimId > 0)
+          // console.log(event.type, event.victimId > 0)
           if(event.type === 'CHAMPION_KILL' && timelineResponse.data.info.participants[event.victimId - 1].puuid === puuid) {
-            deathPositions.push({ x: event.position.x, y: event.position.y });
+            deathPositions.push({ x: event.position.x, y: event.position.y, timestamp: event.timestamp, killer: event.killerId, victim: event.victimId, assistingParticipantIds: event.assistingParticipantIds});
           }
         });
       });
