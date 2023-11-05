@@ -1,0 +1,5 @@
+Todo lugar onde estiver o const sql deve ser substituido adicionando as configs de conexão na pasta database e importando o arquivo
+Mover o arquivo de conexão para a pasta database
+Mover as chamadas da api da riot para a pasta services ao inves de chamar da controller
+criar as chamadas da api do open api na pasta services ao inves de chamar da controller
+criar os testes unitarios

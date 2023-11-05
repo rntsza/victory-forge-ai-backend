@@ -2,6 +2,8 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 
+// const app = require('./src/server');
+
 const postgres = require('postgres');
 require('dotenv').config();
 
@@ -55,131 +57,131 @@ app.get('/getLiveMatch/:id', async (req, res) => {
 });
 
 // Rota para o endpoint /getEntriesBySummoner/:id que recebe o id do invocador e retorna as filas ranqueadas que ele está, nesse caso(o meu), só retorna a fila flex
-app.get('/getEntriesBySummoner/:id', async (req, res) => {
-  const summonerId = req.params.id;
-  try {
-    const response = await axios.get(`https://br1.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerId}`, {
-      headers: {
-        'X-Riot-Token': RIOT_API_KEY
-      }
-    });
-    res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ message: 'Erro na chamada da API' });
-  }
-});
+// app.get('/getEntriesBySummoner/:id', async (req, res) => {
+//   const summonerId = req.params.id;
+//   try {
+//     const response = await axios.get(`https://br1.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerId}`, {
+//       headers: {
+//         'X-Riot-Token': RIOT_API_KEY
+//       }
+//     });
+//     res.json(response.data);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Erro na chamada da API' });
+//   }
+// });
 
 // Rota para o endpoint /getMatchs/:id que recebe o id do invocador e retorna os ids das partidas que ele jogou
-app.get('/getMatchs/:puuid', async (req, res) => {
-  const summonerPuuid = req.params.puuid;
-  /*
-  TODO: Fazer a chamada da api pegar somente as partidas ranqueadas utilizando o parâmetro "type" na chamada da api
-  O type pode ser: PRACTICE_GAME, TUTORIAL_GAME, MATCHED_GAME e CUSTOM_GAME
-  Ele é um array, então pode ser passado mais de um valor, por exemplo: type=ranked&type=custom
-  Descrição da API: Filter the list of match ids by the type of match. This filter is mutually inclusive of the queue filter meaning any match ids returned must match both the queue and type filters.
+// app.get('/getMatchs/:puuid', async (req, res) => {
+//   const summonerPuuid = req.params.puuid;
+//   /*
+//   TODO: Fazer a chamada da api pegar somente as partidas ranqueadas utilizando o parâmetro "type" na chamada da api
+//   O type pode ser: PRACTICE_GAME, TUTORIAL_GAME, MATCHED_GAME e CUSTOM_GAME
+//   Ele é um array, então pode ser passado mais de um valor, por exemplo: type=ranked&type=custom
+//   Descrição da API: Filter the list of match ids by the type of match. This filter is mutually inclusive of the queue filter meaning any match ids returned must match both the queue and type filters.
 
-  O campo queue é o que define se a partida é ranqueada ou não, ele é um array também, então pode ser passado mais de um valor, por exemplo: queue=420&queue=440
-  Como o type, ele é um filtro, então a chamada da API vai retornar somente as partidas que são ranqueadas e que são da fila flex ou solo duo
-  Descrição da API: Filter the list of match ids by a specific queue id. This filter is mutually inclusive of the type filter meaning any match ids returned must match both the queue and type filters.
+//   O campo queue é o que define se a partida é ranqueada ou não, ele é um array também, então pode ser passado mais de um valor, por exemplo: queue=420&queue=440
+//   Como o type, ele é um filtro, então a chamada da API vai retornar somente as partidas que são ranqueadas e que são da fila flex ou solo duo
+//   Descrição da API: Filter the list of match ids by a specific queue id. This filter is mutually inclusive of the type filter meaning any match ids returned must match both the queue and type filters.
 
-  Definir também o count, pois ele pode retornar no máximo 100 ids por chamada, então é necessário fazer mais de uma chamada para pegar todos os ids.
-  Isso pode ser feito adicionando o parâmetro count, que por padrão é 20, mas pode ser até 100.
+//   Definir também o count, pois ele pode retornar no máximo 100 ids por chamada, então é necessário fazer mais de uma chamada para pegar todos os ids.
+//   Isso pode ser feito adicionando o parâmetro count, que por padrão é 20, mas pode ser até 100.
   
-  A documentação da API está aqui: https://developer.riotgames.com/apis#match-v5/GET_getMatchIdsByPUUID
+//   A documentação da API está aqui: https://developer.riotgames.com/apis#match-v5/GET_getMatchIdsByPUUID
 
-  */
-  try {
-    const response = await axios.get(`https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/${summonerPuuid}/ids?start=0&count=1&type=ranked`, {
-      headers: {
-        'X-Riot-Token': RIOT_API_KEY
-      }
-    });
-    res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ message: 'Erro na chamada da API' });
-  }
-});
+//   */
+//   try {
+//     const response = await axios.get(`https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/${summonerPuuid}/ids?start=0&count=1&type=ranked`, {
+//       headers: {
+//         'X-Riot-Token': RIOT_API_KEY
+//       }
+//     });
+//     res.json(response.data);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Erro na chamada da API' });
+//   }
+// });
 
 // Rota para o endpoint /getMatchById/:matchid que recebe o id da partida e retorna os detalhes dela
-app.get('/getMatchById/:matchid', async (req, res) => {
-  const matchId = req.params.matchid;
-  try {
-    const response = await axios.get(`https://americas.api.riotgames.com/lol/match/v5/matches/${matchId}`, {
-      headers: {
-        'X-Riot-Token': RIOT_API_KEY
-      }
-    });
-    // res.json(response.data);
-    const participants = response.data.info.participants; // Trás os dados de cada jogador de forma MUITO DETALHADA, mas os dados são grandes, então é necessário fazer um tratamento para pegar somente os dados necessários
-    const teams = response.data.info.teams; // Trás os dados de cada time, como o time venceu, o time perdeu, o time tem dragão, torre, etc, mas os dados são grandes, então é necessário fazer um tratamento para pegar somente os dados necessários
-    const { gameDuration, gameMode, gameStartTimestamp, gameType, gameVersion, mapId, queueId } = response.data.info;
-    console.log(matchId, gameDuration, gameMode, gameStartTimestamp, gameType, gameVersion, mapId, queueId);
+// app.get('/getMatchById/:matchid', async (req, res) => {
+//   const matchId = req.params.matchid;
+//   try {
+//     const response = await axios.get(`https://americas.api.riotgames.com/lol/match/v5/matches/${matchId}`, {
+//       headers: {
+//         'X-Riot-Token': RIOT_API_KEY
+//       }
+//     });
+//     // res.json(response.data);
+//     const participants = response.data.info.participants; // Trás os dados de cada jogador de forma MUITO DETALHADA, mas os dados são grandes, então é necessário fazer um tratamento para pegar somente os dados necessários
+//     const teams = response.data.info.teams; // Trás os dados de cada time, como o time venceu, o time perdeu, o time tem dragão, torre, etc, mas os dados são grandes, então é necessário fazer um tratamento para pegar somente os dados necessários
+//     const { gameDuration, gameMode, gameStartTimestamp, gameType, gameVersion, mapId, queueId } = response.data.info;
+//     console.log(matchId, gameDuration, gameMode, gameStartTimestamp, gameType, gameVersion, mapId, queueId);
     
-    teams.forEach(async (team) => {
-      const { bans, objectives, teamId, win } = team;
-      console.log(bans, objectives, teamId, win);
-    });
+//     teams.forEach(async (team) => {
+//       const { bans, objectives, teamId, win } = team;
+//       console.log(bans, objectives, teamId, win);
+//     });
 
-    participants.forEach(async (participant) => {
-      const { summonerName, kills, assists, deaths, kda, goldEarned, championName, championId, championLevel, dragonKills, baronKills, damageDealt, damageTaken, wardsPlaced, wardsKilled, visionScore, totalMinionsKilled, neutralMinionsKilled, firstBloodKill, firstTowerKill, lane, role, teamId, win } = participant;
-      //kda, championLevel, damageDealt e damageTaken não estão aparecendo o valor, mesmo que eles não estejam undefined
-      const _kda = (kills + assists) / deaths;
-      console.log('Invocador:', summonerName, 'Campeão:', championName, 'Time:', teamId, 'Venceu:', win === true ? 'Sim' : 'Não', 'Kills:', kills, 'Assists:', assists, 'Deaths:', deaths, 'KDA:', _kda, 'Gold:', goldEarned, 'Dragões:', dragonKills, 'Barões:', baronKills, 'Visão:', visionScore, 'Torres:', firstTowerKill === true ? 'Sim' : 'Não', 'Minions:', totalMinionsKilled, 'Monstros:', neutralMinionsKilled, 'Abates:', firstBloodKill === true ? 'Sim' : 'Não', 'Visão:', wardsPlaced, 'Visão destruída:', wardsKilled, 'Lane:', lane, 'Role:', role);
-      // 
-      return res.status(200).json({ message: 'Partida inserida no banco de dados com sucesso' });
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Erro na chamada da API' });
-  }
-});
+//     participants.forEach(async (participant) => {
+//       const { summonerName, kills, assists, deaths, kda, goldEarned, championName, championId, championLevel, dragonKills, baronKills, damageDealt, damageTaken, wardsPlaced, wardsKilled, visionScore, totalMinionsKilled, neutralMinionsKilled, firstBloodKill, firstTowerKill, lane, role, teamId, win } = participant;
+//       //kda, championLevel, damageDealt e damageTaken não estão aparecendo o valor, mesmo que eles não estejam undefined
+//       const _kda = (kills + assists) / deaths;
+//       console.log('Invocador:', summonerName, 'Campeão:', championName, 'Time:', teamId, 'Venceu:', win === true ? 'Sim' : 'Não', 'Kills:', kills, 'Assists:', assists, 'Deaths:', deaths, 'KDA:', _kda, 'Gold:', goldEarned, 'Dragões:', dragonKills, 'Barões:', baronKills, 'Visão:', visionScore, 'Torres:', firstTowerKill === true ? 'Sim' : 'Não', 'Minions:', totalMinionsKilled, 'Monstros:', neutralMinionsKilled, 'Abates:', firstBloodKill === true ? 'Sim' : 'Não', 'Visão:', wardsPlaced, 'Visão destruída:', wardsKilled, 'Lane:', lane, 'Role:', role);
+//       // 
+//       return res.status(200).json({ message: 'Partida inserida no banco de dados com sucesso' });
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Erro na chamada da API' });
+//   }
+// });
 
 // Rota para o endpoint /getAllMatchsAndSave/:puuid que recebe o puuid do invocador e retorna os ids das partidas que ele jogou e salva no banco de dados
-app.get('/getAllMatchsAndSave/:puuid', async (req, res) => {
-  const summonerPuuid = req.params.puuid;
-  async function saveMatchData(matchId) {
-    const matchDetails = await axios.get(`https://americas.api.riotgames.com/lol/match/v5/matches/${matchId}`, {
-      headers: {
-        'X-Riot-Token': RIOT_API_KEY
-      }
-    });
-    const matchInsertResult = await sql`insert into matches (matchId, gameDuration, gameMode) values (${matchId}, ${matchDetails.data.info.gameDuration}, ${matchDetails.data.info.gameMode}) returning matchId`;
-    if (matchInsertResult) {
-      for (const participant of matchDetails.data.info.participants) {
-        try {
-          const _kda = participant.deaths === 0 ? participant.kills + participant.assists : (participant.kills + participant.assists) / participant.deaths;
-          await sql`insert into players (puuid, summonerName, kills, assists, deaths, kda, goldEarned, item0, item1, item2, item3, item4, item5, item6, championName, championId, individualPosition, visionScore, lane, role, teamId, win, matchId) values (${participant.puuid}, ${participant.summonerName}, ${participant.kills}, ${participant.assists}, ${participant.deaths}, ${_kda}, ${participant.goldEarned}, ${participant.item0}, ${participant.item1}, ${participant.item2}, ${participant.item3}, ${participant.item4}, ${participant.item5}, ${participant.item6}, ${participant.championName}, ${participant.championId}, ${participant.individualPosition}, ${participant.visionScore}, ${participant.lane}, ${participant.role}, ${participant.teamId}, ${participant.win}, ${matchId})`;
-        }
-        catch (error) {
-          console.error(`Erro ao inserir participante ${participant.summonerName}:`, error);
-        }
-      }
-    }
-  }
+// app.get('/getAllMatchsAndSave/:puuid', async (req, res) => {
+//   const summonerPuuid = req.params.puuid;
+//   async function saveMatchData(matchId) {
+//     const matchDetails = await axios.get(`https://americas.api.riotgames.com/lol/match/v5/matches/${matchId}`, {
+//       headers: {
+//         'X-Riot-Token': RIOT_API_KEY
+//       }
+//     });
+//     const matchInsertResult = await sql`insert into matches (matchId, gameDuration, gameMode) values (${matchId}, ${matchDetails.data.info.gameDuration}, ${matchDetails.data.info.gameMode}) returning matchId`;
+//     if (matchInsertResult) {
+//       for (const participant of matchDetails.data.info.participants) {
+//         try {
+//           const _kda = participant.deaths === 0 ? participant.kills + participant.assists : (participant.kills + participant.assists) / participant.deaths;
+//           await sql`insert into players (puuid, summonerName, kills, assists, deaths, kda, goldEarned, item0, item1, item2, item3, item4, item5, item6, championName, championId, individualPosition, visionScore, lane, role, teamId, win, matchId) values (${participant.puuid}, ${participant.summonerName}, ${participant.kills}, ${participant.assists}, ${participant.deaths}, ${_kda}, ${participant.goldEarned}, ${participant.item0}, ${participant.item1}, ${participant.item2}, ${participant.item3}, ${participant.item4}, ${participant.item5}, ${participant.item6}, ${participant.championName}, ${participant.championId}, ${participant.individualPosition}, ${participant.visionScore}, ${participant.lane}, ${participant.role}, ${participant.teamId}, ${participant.win}, ${matchId})`;
+//         }
+//         catch (error) {
+//           console.error(`Erro ao inserir participante ${participant.summonerName}:`, error);
+//         }
+//       }
+//     }
+//   }
   
-  async function saveMatches() {
-    try {
-      const response = await axios.get(`https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/${summonerPuuid}/ids?start=0&count=100&type=ranked`, {
-        headers: {
-          'X-Riot-Token': RIOT_API_KEY
-        }
-      });
+//   async function saveMatches() {
+//     try {
+//       const response = await axios.get(`https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/${summonerPuuid}/ids?start=0&count=100&type=ranked`, {
+//         headers: {
+//           'X-Riot-Token': RIOT_API_KEY
+//         }
+//       });
 
-      for (const matchId of response.data) {
-        const matchExists = await sql`select exists(select 1 from matches where matchId = ${matchId})`;
-        if (!matchExists[0].exists || matchExists[0].exists === "false") {
-          await saveMatchData(matchId);
-        } else {
-          console.log('Partida já existe no banco de dados');
-        }
-      }
-      res.status(200).send('Todas as partidas foram processadas com sucesso.');
-    } catch (error) {
-      console.error('Erro na chamada da API', error);
-      res.status(500).send('Ocorreu um erro ao processar as partidas.');
-    }
-  }
-  saveMatches();
-});
+//       for (const matchId of response.data) {
+//         const matchExists = await sql`select exists(select 1 from matches where matchId = ${matchId})`;
+//         if (!matchExists[0].exists || matchExists[0].exists === "false") {
+//           await saveMatchData(matchId);
+//         } else {
+//           console.log('Partida já existe no banco de dados');
+//         }
+//       }
+//       res.status(200).send('Todas as partidas foram processadas com sucesso.');
+//     } catch (error) {
+//       console.error('Erro na chamada da API', error);
+//       res.status(500).send('Ocorreu um erro ao processar as partidas.');
+//     }
+//   }
+//   saveMatches();
+// });
 
 // Rota para o endpoint /getSummonerByPuuid/:puuid que recebe o puuid do invocador e retorna os dados dele
 app.get('/getSummonerByPuuid/:puuid', async (req, res) => {
