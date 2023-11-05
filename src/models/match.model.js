@@ -1,69 +1,81 @@
-const postgres = require("postgres");
-require("dotenv").config({ path: "../.env" });
-let {
-  PGHOST_POOLED,
-  PGDATABASE,
-  PGUSER,
-  PGPASSWORD,
-  ENDPOINT_ID_POOLED,
-} = process.env;
-
-const sql = postgres({
-  host: PGHOST_POOLED,
-  database: PGDATABASE,
-  username: PGUSER,
-  password: PGPASSWORD,
-  port: 5432,
-  ssl: "require",
-  connection: {
-    options: `project=${ENDPOINT_ID_POOLED}`,
-  },
-});
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 class Match {
   static async find() {
-    const rows = await sql`SELECT * FROM matches`;
-    return rows;
+    return prisma.match.findMany();
   }
 
   static async findById(id) {
-    const match = await sql`SELECT * FROM matches WHERE matchid = ${id}`;
-    return match;
+    return prisma.match.findUnique({
+      where: {
+        matchId: id
+      }
+    });
   }
 
   static async createMatch(match) {
-    try {
-      const newMatch =
-        await sql`INSERT INTO matches (matchid, match) VALUES (${match.gameId}, ${match}) RETURNING *`;
-      return newMatch;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
+    return prisma.match.create({
+      data: {
+        matchId: match.gameId,
+        match: match
+      }
+    });
   }
 
   static async saveMatchData(matchId, gameDuration, gameMode) {
     if (!matchId || !gameDuration || !gameMode) {
       throw new Error("Missing parameters");
     }
-    const matchInsertResult =
-      await sql`insert into matches (matchId, gameDuration, gameMode) values (${matchId}, ${gameDuration}, ${gameMode}) returning matchId`;
-    return matchInsertResult;
+    return prisma.match.create({
+      data: {
+        matchId: matchId,
+        gameDuration: gameDuration,
+        gameMode: gameMode
+      }
+    });
   }
 
   static async matchExists(matchId) {
-    const matchExists =
-      await sql`select exists(select 1 from matches where matchId = ${matchId})`;
-    return matchExists;
+    const match = await prisma.match.findUnique({
+      where: {
+        matchId: matchId
+      }
+    });
+    return match !== null;
   }
 
   static async savePlayer(participant, matchId) {
     if (!participant || !matchId) {
       throw new Error("Missing parameters");
     }
-    const savePlayerFromMatch =
-      await sql`insert into players (puuid, summonerName, kills, assists, deaths, kda, goldEarned, item0, item1, item2, item3, item4, item5, item6, championName, championId, individualPosition, visionScore, lane, role, teamId, win, matchId) values (${participant.puuid}, ${participant.summonerName}, ${participant.kills}, ${participant.assists}, ${participant.deaths}, ${participant.challenges.kda}, ${participant.goldEarned}, ${participant.item0}, ${participant.item1}, ${participant.item2}, ${participant.item3}, ${participant.item4}, ${participant.item5}, ${participant.item6}, ${participant.championName}, ${participant.championId}, ${participant.individualPosition}, ${participant.visionScore}, ${participant.lane}, ${participant.role}, ${participant.teamId}, ${participant.win}, ${matchId})`;
-    return savePlayerFromMatch;
+    return prisma.player.create({
+      data: {
+        puuid: participant.puuid,
+        summonerName: participant.summonerName,
+        kills: participant.kills,
+        assists: participant.assists,
+        deaths: participant.deaths,
+        kda: participant.challenges.kda,
+        goldEarned: participant.goldEarned,
+        item0: participant.item0,
+        item1: participant.item1,
+        item2: participant.item2,
+        item3: participant.item3,
+        item4: participant.item4,
+        item5: participant.item5,
+        item6: participant.item6,
+        championName: participant.championName,
+        championId: participant.championId,
+        individualPosition: participant.individualPosition,
+        visionScore: participant.visionScore,
+        lane: participant.lane,
+        role: participant.role,
+        teamId: participant.teamId,
+        win: participant.win,
+        matchId: matchId
+      }
+    });
   }
 }
 
