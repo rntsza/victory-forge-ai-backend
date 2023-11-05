@@ -3,3 +3,17 @@ Mover o arquivo de conexão para a pasta database
 Mover as chamadas da api da riot para a pasta services ao inves de chamar da controller
 criar as chamadas da api do open api na pasta services ao inves de chamar da controller
 criar os testes unitarios
+
+
+Start using Prisma Client in Node.js (See: https://pris.ly/d/client)
+```
+import { PrismaClient } from '@prisma/client'
+const prisma = new PrismaClient()
+```
+or start using Prisma Client at the edge (See: https://pris.ly/d/accelerate)
+```
+import { PrismaClient } from '@prisma/client/edge'
+const prisma = new PrismaClient()
+```
+
+See other ways of importing Prisma Client: http://pris.ly/d/importing-client
