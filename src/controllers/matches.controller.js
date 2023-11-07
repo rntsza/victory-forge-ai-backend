@@ -1,9 +1,10 @@
 const Match = require("../models/match.model");
+const Player = require("../models/player.model");
 const RiotApiService = require("../services/riotAPI.service");
 
 exports.getAllMatchsAndSave = async (req, res) => {
   const summonerPuuid = req.params.puuid;
-  const count = req.body.count || 10;
+  const count = req.body.count || 29;
 
   async function saveMatchData(matchId) {
     const matchDetails = await RiotApiService.getMatchDetails(matchId).then(
@@ -15,42 +16,29 @@ exports.getAllMatchsAndSave = async (req, res) => {
     const matchInsertResult = await Match.saveMatchData(
       matchId,
       matchDetails.info.gameDuration,
-      matchDetails.info.gameMode
+      matchDetails.info.gameMode,
+      matchDetails.info.gameStartTimestamp,
+      matchDetails.info.gameType,
+      matchDetails.info.gameVersion,
+      matchDetails.info.mapId,
+      matchDetails.info.queueId
     );
+    
     if (matchInsertResult) {
       for (const participant of matchDetails.info.participants) {
         try {
-          const {
-            puuid,
-            summonerName,
-            kills,
-            assists,
-            deaths,
-            challenges,
-            goldEarned,
-            item0,
-            item1,
-            item2,
-            item3,
-            item4,
-            item5,
-            item6,
-            championName,
-            championId,
-            individualPosition,
-            visionScore,
-            lane,
-            role,
-            teamId,
-            win,
-          } = participant;
           const savePlayerFromMatch = await Match.savePlayer(
             participant,
             matchId
           );
+          if (savePlayerFromMatch) {
+            console.log(`Jogador salvo com sucesso.`);
+          } else {
+            console.error(`Erro ao salvar jogador.`);
+          }
         } catch (error) {
           console.error(
-            `Erro ao inserir participante ${participant.summonerName}:`,
+            `Erro ao inserir participante:`,
             error
           );
         }

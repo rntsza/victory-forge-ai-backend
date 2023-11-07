@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 class Match {
@@ -9,8 +9,8 @@ class Match {
   static async findById(id) {
     return prisma.matches.findUnique({
       where: {
-        matchid: id
-      }
+        matchid: id,
+      },
     });
   }
 
@@ -18,71 +18,66 @@ class Match {
     return prisma.matches.create({
       data: {
         matchid: match.gameId,
-        match: match
-      }
+        match: match,
+      },
     });
   }
 
-  static async saveMatchData(matchId, gameDuration, gameMode) {
+  static async saveMatchData(
+    matchId,
+    gameDuration,
+    gameMode,
+    gameStartTimestamp,
+    gameType,
+    gameVersion,
+    mapId,
+    queueId
+  ) {
     if (!matchId || !gameDuration || !gameMode) {
       throw new Error("Missing parameters");
     }
-    console.log(`Salvando partida ${matchId}`)
-    return prisma.matches.create({
-      data: {
-        matchid: matchId,
-        gameduration: gameDuration,
-        gamemode: gameMode,
-        gamestarttimestamp: null,
-        gametype: null,
-        gameversion: null,
-        mapid: null,
-        queueid: null
-      }
-    });
+    console.log(`Salvando partida ${matchId}`);
+    const matchExists = await this.matchExists(matchId);
+
+    if (matchExists) {
+      console.log(`A partida ${matchId} já existe`);
+    } else {
+      return prisma.matches.create({
+        data: {
+          matchid: matchId,
+          gameduration: gameDuration,
+          gamemode: gameMode,
+          gamestarttimestamp: gameStartTimestamp,
+          gametype: gameType,
+          gameversion: gameVersion,
+          mapid: mapId,
+          queueid: queueId,
+        },
+      });
+    }
   }
 
   static async matchExists(matchId) {
-    console.log(`Verificando se a partida ${matchId} já existe`)
+    console.log(`Verificando se a partida ${matchId} já existe`);
     const match = await prisma.matches.findUnique({
       where: {
-        matchid: matchId
-      }
+        matchid: matchId,
+      },
     });
     return match !== null;
   }
 
-  static async savePlayer(participant, matchId) {
-    if (!participant || !matchId) {
+  static async savePlayer(participant, matchid) {
+    if (!participant || !matchid) {
       throw new Error("Missing parameters");
     }
-    return prisma.players.create({
-      data: {
-        puuid: participant.puuid,
-        summonername: participant.summonerName,
-        kills: participant.kills,
-        assists: participant.assists,
-        deaths: participant.deaths,
-        kda: participant.challenges.kda,
-        goldearned: participant.goldEarned,
-        item0: participant.item0,
-        item1: participant.item1,
-        item2: participant.item2,
-        item3: participant.item3,
-        item4: participant.item4,
-        item5: participant.item5,
-        item6: participant.item6,
-        championname: participant.championName,
-        championid: participant.championId,
-        individualposition: participant.individualPosition,
-        visionscore: participant.visionScore,
-        lane: participant.lane,
-        role: participant.role,
-        teamid: participant.teamId,
-        win: participant.win,
-        matchid: matchId
-      }
-    });
+    try {
+      const result = await prisma.$queryRaw`INSERT INTO players (puuid, summonername, kills, assists, deaths, kda, goldearned, item0, item1, item2, item3, item4, item5, item6, championname, championid, individualposition, visionscore, lane, role, teamid, win, matchid) VALUES (${participant.puuid}, ${participant.summonerName}, ${participant.kills}, ${participant.assists}, ${participant.deaths}, ${participant.challenges.kda}, ${participant.goldEarned}, ${participant.item0}, ${participant.item1}, ${participant.item2}, ${participant.item3}, ${participant.item4}, ${participant.item5}, ${participant.item6}, ${participant.championName}, ${participant.championId}, ${participant.individualPosition}, ${participant.visionScore}, ${participant.lane}, ${participant.role}, ${participant.teamId}, ${participant.win}, ${matchid});`;
+      return result;
+    } catch (error) {
+      console.error("Erro ao salvar jogador:", error);
+      throw error;
+    }
   }
 }
 
