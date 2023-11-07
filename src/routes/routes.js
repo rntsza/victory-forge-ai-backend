@@ -31,6 +31,7 @@ router.delete('/users/:id', usersController.deleteUser);
 // Rotas da API da Riot
 // Matches
 router.get('/matches/:puuid', matchesController.getAllMatchsAndSave);
+router.get('/matches/:puuid/:count', matchesController.getAllMatchsAndSave);
 
 // Summoners
 router.get('/summoners', summonersController.getAllSummoners);

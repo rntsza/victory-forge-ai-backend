@@ -4,7 +4,7 @@ const RiotApiService = require("../services/riotAPI.service");
 
 exports.getAllMatchsAndSave = async (req, res) => {
   const summonerPuuid = req.params.puuid;
-  const count = req.body.count || 29;
+  const count = req.params.count || 10;
 
   async function saveMatchData(matchId) {
     const matchDetails = await RiotApiService.getMatchDetails(matchId).then(
