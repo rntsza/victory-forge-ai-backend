@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+
 class Summoner {
   static async find() {
     try {
@@ -10,11 +11,26 @@ class Summoner {
     }
   }
 
+  static async findByName(name) {
+    try {
+      const summoner = await prisma.summoner.findUnique({
+        where: {
+          name: name,
+        },
+      });
+      return summoner;
+    } catch (error) {
+      throw error;
+    } finally {
+      await prisma.$disconnect();
+    }
+  }
+
   static async findById(id) {
     try {
       const summoner = await prisma.summoners.findUnique({
         where: {
-          puuid: id,
+          id: id,
         },
       });
       return summoner;
@@ -112,6 +128,36 @@ class Summoner {
       return deletedSummoner;
     } catch (error) {
       console.error(error);
+      throw error;
+    } finally {
+      await prisma.$disconnect();
+    }
+  }
+
+  static async findByAccountId(accountid) {
+    try {
+      const summoner = await prisma.summoner.findUnique({
+        where: {
+          accountid: accountid,
+        },
+      });
+      return summoner;
+    } catch (error) {
+      throw error;
+    } finally {
+      await prisma.$disconnect();
+    }
+  }
+
+  static async findByPuuid(puuid) {
+    try {
+      const summoner = await prisma.summoner.findUnique({
+        where: {
+          puuid: puuid,
+        },
+      });
+      return summoner;
+    } catch (error) {
       throw error;
     } finally {
       await prisma.$disconnect();

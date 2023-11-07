@@ -18,3 +18,15 @@ exports.getTopWinningTeammates = async (req, res) => {
     res.status(500).json({ message: 'Erro ao buscar dados do banco de dados' });
   }
 };
+
+exports.getAllChampionsWinRate = async (req, res) => {
+  const summonerPuuid = req.params.puuid;
+  console.log('summonerPuuid', summonerPuuid);
+  try {
+    const championsResult = await teammatesModel.getAllChampionsWinRate(summonerPuuid);
+    res.json(championsResult);
+  } catch (error) {
+    console.error('Erro ao buscar dados do banco de dados:', error);
+    res.status(500).json({ message: 'Erro ao buscar dados do banco de dados' });
+  }
+}

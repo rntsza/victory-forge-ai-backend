@@ -29,6 +29,37 @@ class Team {
         `;
     return teammates;
   }
+
+  static async getAllChampionsWinRate(puuid) {
+    try {
+      const championsStats = await prisma.$queryRaw`
+      SELECT 
+        championName,
+        championId,
+        SUM(CASE WHEN win THEN 1 ELSE 0 END) as wins,
+        COUNT(*) - SUM(CASE WHEN win THEN 1 ELSE 0 END) as losses
+      FROM players
+      WHERE puuid = ${puuid}
+      GROUP BY championName, championId;`;
+
+      const winRates = championsStats.map((champion) => {
+        const totalGames = parseInt(champion.wins) + parseInt(champion.losses);
+        const winRate = (parseInt(champion.wins) / totalGames) * 100;
+
+        return {
+          championName: champion.championname,
+          championId: champion.championid,
+          winRate: winRate.toFixed(2) + "%",
+          wins: parseInt(champion.wins),
+          losses: parseInt(champion.losses),
+        };
+      });
+      return winRates;
+    } catch (error) {
+      console.error("Erro ao buscar dados do banco de dados:", error);
+      throw error;
+    }
+  }
 }
 
 module.exports = Team;

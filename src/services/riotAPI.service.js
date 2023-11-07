@@ -1,7 +1,6 @@
 const axios = require('axios');
 require("dotenv").config({ path: "../.env" });
-const { RIOT_API, RIOT_API_BASE_URL } = process.env;
-
+const { RIOT_API, RIOT_API_BASE_URL, RIOT_API_BASE_URL_BR } = process.env;
 class RiotApiService {
   static async getMatchIdsByPuuid(puuid, count) {
     try {
@@ -30,6 +29,22 @@ class RiotApiService {
       throw error;
     }
   }
+
+  static async getSummonerByName(summonerName) {
+    try {
+      console.log('summonerName', summonerName)
+      const response = await axios.get(`${RIOT_API_BASE_URL_BR}/summoner/v4/summoners/by-name/${summonerName}`, {
+        headers: {
+          'X-Riot-Token': RIOT_API
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro na chamada da API da Riot:', error);
+      throw error;
+    }
+  }
+
 }
 
 module.exports = RiotApiService;

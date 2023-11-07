@@ -1,4 +1,5 @@
 const Summoner = require("../models/summoner.model");
+const RiotApiService = require("../services/riotAPI.service");
 
 exports.createSummoner = (req, res) => {
   if (!req.body.name) {
@@ -42,7 +43,7 @@ exports.getAllSummoners = (req, res) => {
 };
 
 exports.getSummonerById = (req, res) => {
-  Summoner.findById(req.params.puuid)
+  Summoner.findById(req.params.id)
     .then((summoner) => {
       if (!summoner) {
         return res.status(404).send({
@@ -122,4 +123,84 @@ exports.deleteSummoner = (req, res) => {
         message: "Could not delete summoner with id " + req.params.name,
       });
     });
+};
+
+exports.getSummonerByName = (req, res) => {
+  Summoner.findByName(req.params.name)
+    .then((summoner) => {
+      if (!summoner) {
+        return res.status(404).send({
+          message: "Summoner not found with name " + req.params.name,
+        });
+      }
+      summoner.revisiondate = summoner.revisiondate.toString();
+      res.status(200).send(summoner);
+    })
+    .catch((err) => {
+      if (err.kind === "ObjectId") {
+        return res.status(404).send({
+          message: "Summoner not found with name " + req.params.name,
+        });
+      }
+      return res.status(500).send({
+        message: "Error retrieving summoner with name " + req.params.name,
+      });
+    });
+};
+
+exports.getSummonerByAccountId = (req, res) => {
+  Summoner.findByAccountId(req.params.accountid)
+    .then((summoner) => {
+      if (!summoner) {
+        return res.status(404).send({
+          message: "Summoner not found with accountid " + req.params.accountid,
+        });
+      }
+      summoner.revisiondate = summoner.revisiondate.toString();
+      res.status(200).send(summoner);
+    })
+    .catch((err) => {
+      if (err.kind === "ObjectId") {
+        return res.status(404).send({
+          message: "Summoner not found with accountid " + req.params.accountid,
+        });
+      }
+      return res.status(500).send({
+        message: "Error retrieving summoner with accountid " + req.params.accountid,
+      });
+    });
+};
+
+exports.getSummonerByPuuid = (req, res) => {
+  Summoner.findByPuuid(req.params.puuid)
+    .then((summoner) => {
+      if (!summoner) {
+        return res.status(404).send({
+          message: "Summoner not found with puuid " + req.params.puuid,
+        });
+      }
+      summoner.revisiondate = summoner.revisiondate.toString();
+      res.status(200).send(summoner);
+    })
+    .catch((err) => {
+      if (err.kind === "ObjectId") {
+        return res.status(404).send({
+          message: "Summoner not found with puuid " + req.params.puuid,
+        });
+      }
+      return res.status(500).send({
+        message: "Error retrieving summoner with puuid " + req.params.puuid,
+      });
+    });
+};
+
+exports.getSummoner = async (req, res) => {
+  try {
+    const summonerName = req.params.name;
+    const summoner = await RiotApiService.getSummonerByName(summonerName);
+    return summoner;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };

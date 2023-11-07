@@ -1,6 +1,6 @@
 Todo lugar onde estiver o const sql deve ser substituido adicionando as configs de conexão na pasta database e importando o arquivo  --- Done
 Mover o arquivo de conexão para a pasta database --- Done
-Mover as chamadas da api da riot para a pasta services ao inves de chamar da controller --- On hold
+Mover as chamadas da api da riot para a pasta services ao inves de chamar da controller --- Done
 criar as chamadas da api do openai api na pasta services ao inves de chamar da controller  --- On hold
-criar todos os endpoints da api, os mesmos estão no arquivo index_bkp.txt --- On going
+criar todos os endpoints da api, os mesmos estão no arquivo index_bkp.txt --- Done
 criar os testes unitarios  --- On hold
