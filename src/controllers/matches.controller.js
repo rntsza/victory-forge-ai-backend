@@ -11,6 +11,7 @@ exports.getAllMatchsAndSave = async (req, res) => {
         return result;
       }
     );
+    
     const matchInsertResult = await Match.saveMatchData(
       matchId,
       matchDetails.info.gameDuration,
@@ -67,7 +68,7 @@ exports.getAllMatchsAndSave = async (req, res) => {
       for (const matchId of response) {
         console.log(`Processando partida ${matchId}`);
         const matchExists = await Match.matchExists(matchId);
-        if (!matchExists[0].exists || matchExists[0].exists === "false") {
+        if (!matchExists[0]) {
           await saveMatchData(matchId);
         } else {
           console.log("Partida já existe no banco de dados");

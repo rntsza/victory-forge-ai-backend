@@ -3,21 +3,21 @@ const prisma = new PrismaClient();
 
 class Match {
   static async find() {
-    return prisma.match.findMany();
+    return prisma.matches.findMany();
   }
 
   static async findById(id) {
-    return prisma.match.findUnique({
+    return prisma.matches.findUnique({
       where: {
-        matchId: id
+        matchid: id
       }
     });
   }
 
   static async createMatch(match) {
-    return prisma.match.create({
+    return prisma.matches.create({
       data: {
-        matchId: match.gameId,
+        matchid: match.gameId,
         match: match
       }
     });
@@ -27,19 +27,26 @@ class Match {
     if (!matchId || !gameDuration || !gameMode) {
       throw new Error("Missing parameters");
     }
-    return prisma.match.create({
+    console.log(`Salvando partida ${matchId}`)
+    return prisma.matches.create({
       data: {
-        matchId: matchId,
-        gameDuration: gameDuration,
-        gameMode: gameMode
+        matchid: matchId,
+        gameduration: gameDuration,
+        gamemode: gameMode,
+        gamestarttimestamp: null,
+        gametype: null,
+        gameversion: null,
+        mapid: null,
+        queueid: null
       }
     });
   }
 
   static async matchExists(matchId) {
-    const match = await prisma.match.findUnique({
+    console.log(`Verificando se a partida ${matchId} já existe`)
+    const match = await prisma.matches.findUnique({
       where: {
-        matchId: matchId
+        matchid: matchId
       }
     });
     return match !== null;
@@ -49,15 +56,15 @@ class Match {
     if (!participant || !matchId) {
       throw new Error("Missing parameters");
     }
-    return prisma.player.create({
+    return prisma.players.create({
       data: {
         puuid: participant.puuid,
-        summonerName: participant.summonerName,
+        summonername: participant.summonerName,
         kills: participant.kills,
         assists: participant.assists,
         deaths: participant.deaths,
         kda: participant.challenges.kda,
-        goldEarned: participant.goldEarned,
+        goldearned: participant.goldEarned,
         item0: participant.item0,
         item1: participant.item1,
         item2: participant.item2,
@@ -65,15 +72,15 @@ class Match {
         item4: participant.item4,
         item5: participant.item5,
         item6: participant.item6,
-        championName: participant.championName,
-        championId: participant.championId,
-        individualPosition: participant.individualPosition,
-        visionScore: participant.visionScore,
+        championname: participant.championName,
+        championid: participant.championId,
+        individualposition: participant.individualPosition,
+        visionscore: participant.visionScore,
         lane: participant.lane,
         role: participant.role,
-        teamId: participant.teamId,
+        teamid: participant.teamId,
         win: participant.win,
-        matchId: matchId
+        matchid: matchId
       }
     });
   }

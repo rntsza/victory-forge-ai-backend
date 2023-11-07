@@ -13,6 +13,7 @@ const matchesController = require('../controllers/matches.controller');
 // const clashController = require('../controllers/clash.controller');
 // const tournamentsController = require('../controllers/tournaments.controller');
 // const tournamentsStubController = require('../controllers/tournamentsStub.controller');
+const teamsController = require('../controllers/teams.controller');
 
 router.get('/', async (req, res) => {
     const { data } = await axios.get('https://dummyjson.com/quotes/random');
@@ -39,6 +40,7 @@ router.delete('/summoners/:puuid', summonersController.deleteSummoner);
 
 // Rotas do MongoDB
 
+router.get('/teammates/:puuid', teamsController.getTopWinningTeammates);
 
 // Rotas da API do OpenAI
 
