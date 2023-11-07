@@ -4,8 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "preinstall": "npx prisma generate",
     "start": "node index.js",
-    "test": "jest --detectOpenHandles"
+    "test": "jest --detectOpenHandles",
+    "dev": "nodemon index.js",
+    "prisma:generate": "npx prisma generate"
   },
   "author": "",
   "license": "ISC",
