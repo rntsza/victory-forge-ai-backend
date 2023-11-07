@@ -36,11 +36,9 @@ class Match {
     if (!matchId || !gameDuration || !gameMode) {
       throw new Error("Missing parameters");
     }
-    console.log(`Salvando partida ${matchId}`);
     const matchExists = await this.matchExists(matchId);
 
     if (matchExists) {
-      console.log(`A partida ${matchId} já existe`);
     } else {
       return prisma.matches.create({
         data: {
@@ -58,7 +56,6 @@ class Match {
   }
 
   static async matchExists(matchId) {
-    console.log(`Verificando se a partida ${matchId} já existe`);
     const match = await prisma.matches.findUnique({
       where: {
         matchid: matchId,

@@ -32,7 +32,6 @@ class RiotApiService {
 
   static async getSummonerByName(summonerName) {
     try {
-      console.log('summonerName', summonerName)
       const response = await axios.get(`${RIOT_API_BASE_URL_BR}/summoner/v4/summoners/by-name/${summonerName}`, {
         headers: {
           'X-Riot-Token': RIOT_API

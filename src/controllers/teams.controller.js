@@ -21,7 +21,6 @@ exports.getTopWinningTeammates = async (req, res) => {
 
 exports.getAllChampionsWinRate = async (req, res) => {
   const summonerPuuid = req.params.puuid;
-  console.log('summonerPuuid', summonerPuuid);
   try {
     const championsResult = await teammatesModel.getAllChampionsWinRate(summonerPuuid);
     res.json(championsResult);

@@ -54,7 +54,6 @@ exports.getAllMatchsAndSave = async (req, res) => {
       );
       console.log(`Foram encontradas ${response.length} partidas`);
       for (const matchId of response) {
-        console.log(`Processando partida ${matchId}`);
         const matchExists = await Match.matchExists(matchId);
         if (!matchExists[0]) {
           await saveMatchData(matchId);
