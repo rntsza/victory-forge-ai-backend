@@ -33,7 +33,7 @@ class Match {
     mapId,
     queueId
   ) {
-    if (!matchId || !gameDuration || !gameMode) {
+    if (!matchId) {
       throw new Error("Missing parameters");
     }
     const matchExists = await this.matchExists(matchId);
